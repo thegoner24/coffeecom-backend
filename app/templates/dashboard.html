@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CoffeeCom</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f5f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+            padding: 48px 40px;
+        }
+        h1 {
+            color: #7b3f00;
+            margin-bottom: 16px;
+        }
+        .stats {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+        .stat {
+            background: #f3ede7;
+            border-radius: 8px;
+            padding: 24px 32px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .stat h2 {
+            margin: 0;
+            color: #a05a2c;
+            font-size: 2.2em;
+        }
+        .stat p {
+            margin: 8px 0 0 0;
+            color: #555;
+        }
+        .welcome {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .logout {
+            display: block;
+            margin: 0 auto;
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .logout:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard</h1>
+        <div class="welcome">
+            Welcome, <b>User</b>!<br>
+            Here are your latest stats:
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <h2>3</h2>
+                <p>Orders</p>
+            </div>
+            <div class="stat">
+                <h2>2</h2>
+                <p>Transactions</p>
+            </div>
+            <div class="stat">
+                <h2>1</h2>
+                <p>Reviews</p>
+            </div>
+        </div>
+        <button class="logout">Logout</button>
+    </div>
+</body>
+</html>

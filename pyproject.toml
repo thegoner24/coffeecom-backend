@@ -1,0 +1,16 @@
+[project]
+name = "coffeecom-backend"
+version = "0.1.0"
+description = "Ecommerce backend for coffeecom using Flask, JWT, SQLAlchemy, and UV manager."
+authors = ["Guntur <guntur@enclosureagency.com>"]
+
+[tool.uv]
+
+[project.dependencies]
+Flask = "^2.3.2"
+Flask-JWT-Extended = "^4.5.2"
+Flask-SQLAlchemy = "^3.1.1"
+Flask-Migrate = "^4.0.4"
+python-dotenv = "^1.0.1"
+bcrypt = "^4.1.2"
+psycopg2-binary = "^2.9.9"

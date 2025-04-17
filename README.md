@@ -15,11 +15,13 @@ A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integ
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register a new user or seller
 - `POST /api/auth/login` - Login and get JWT token
 - `GET /api/auth/profile` - Get user profile
 
 ### Products
+
 - `GET /api/products` - Get all products
 - `GET /api/products/:id` - Get product details
 - `POST /api/products` - Add a new product (seller only)
@@ -27,6 +29,7 @@ A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integ
 - `DELETE /api/products/:id` - Delete a product (seller only)
 
 ### Dashboard
+
 - `GET /api/dashboard/user` - User dashboard
 - `GET /api/dashboard/seller` - Seller dashboard
 - `GET /api/dashboard/admin` - Admin dashboard
@@ -64,6 +67,8 @@ python run_postgres.py
 
 ## CI/CD Setup with GitHub Actions and Koyeb
 
+This project uses a Docker-based CI/CD pipeline with GitHub Actions and Koyeb.
+
 ### 1. Set up GitHub Secrets
 
 Add the following secrets to your GitHub repository:
@@ -72,6 +77,7 @@ Add the following secrets to your GitHub repository:
 - `SECRET_KEY`: A secure secret key for Flask
 - `JWT_SECRET_KEY`: A secure secret key for JWT
 - `SQLALCHEMY_DATABASE_URI`: Your PostgreSQL connection string
+- `GITHUB_TOKEN`: Automatically provided by GitHub Actions
 
 ### 2. Create a Koyeb Account and Database
 
@@ -79,13 +85,24 @@ Add the following secrets to your GitHub repository:
 2. Create a PostgreSQL database or use an external provider
 3. Get your API token from Koyeb dashboard
 
-### 3. Push to GitHub
+### 3. How the CI/CD Pipeline Works
 
-The CI/CD pipeline will automatically:
+The workflow consists of three main jobs:
 
-1. Run tests
-2. Build Docker image
-3. Deploy to Koyeb
+1. **Test**: Runs the test suite against a PostgreSQL database
+2. **Build and Push**: Builds a Docker image and pushes it to GitHub Container Registry
+3. **Deploy to Koyeb**: Deploys the Docker image to Koyeb using the Koyeb CLI
+
+### 4. Deployment Process
+
+When you push to the main branch, the CI/CD pipeline will automatically:
+
+1. Run all tests to ensure code quality
+2. Build a Docker image with your application
+3. Push the image to GitHub Container Registry (ghcr.io)
+4. Deploy the image to Koyeb using your configuration
+
+You can monitor the deployment in the GitHub Actions tab of your repository and in the Koyeb dashboard.
 
 ## Database Setup
 

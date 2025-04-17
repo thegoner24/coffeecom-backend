@@ -1,0 +1,28 @@
+name: coffeecom-backend
+
+services:
+  - name: api
+    type: web
+    image: 
+      name: dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - port: 5000
+        protocol: http
+    env:
+      - name: SECRET_KEY
+        value: "REPLACE_WITH_SECRET"
+      - name: JWT_SECRET_KEY
+        value: "REPLACE_WITH_JWT_SECRET"
+      - name: SQLALCHEMY_DATABASE_URI
+        value: "REPLACE_WITH_DATABASE_URI"
+      - name: FLASK_ENV
+        value: "production"
+    healthcheck:
+      http:
+        path: /
+        port: 5000
+      initial_delay: 10s
+      interval: 30s
+      timeout: 5s
+      retries: 3

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=your-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+      - SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://postgres:postgres@db:5432/coffeecom_db
+    volumes:
+      - ./:/app
+    command: >
+      bash -c "sleep 5 &&
+              python -m flask db upgrade && 
+              gunicorn --bind 0.0.0.0:5000 'app:create_app()'"
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=coffeecom_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

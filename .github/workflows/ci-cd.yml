@@ -97,9 +97,14 @@ jobs:
     steps:
     - name: Install Koyeb CLI
       run: |
-        curl -fsSL https://cli.koyeb.com/install.sh | sh
-        # Add Koyeb CLI to PATH
-        echo "${HOME}/.koyeb/bin" >> $GITHUB_PATH
+        # Download the Koyeb CLI directly
+        mkdir -p /tmp/koyeb
+        curl -L "https://github.com/koyeb/koyeb-cli/releases/download/v3.3.0/koyeb-cli_3.3.0_linux_amd64.tar.gz" -o /tmp/koyeb/koyeb.tar.gz
+        tar -xzf /tmp/koyeb/koyeb.tar.gz -C /tmp/koyeb
+        sudo mv /tmp/koyeb/koyeb /usr/local/bin/
+        chmod +x /usr/local/bin/koyeb
+        # Verify installation
+        koyeb --version
         
     - name: Deploy to Koyeb
       env:

@@ -14,4 +14,3 @@ pytest==8.0.0
 pytest-cov==4.1.0
 redis==5.0.1
 Sentry-SDK==1.40.6
-uwsgi==2.0.23

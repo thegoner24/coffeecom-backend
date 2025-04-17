@@ -98,6 +98,8 @@ jobs:
     - name: Install Koyeb CLI
       run: |
         curl -fsSL https://cli.koyeb.com/install.sh | sh
+        # Add Koyeb CLI to PATH
+        echo "${HOME}/.koyeb/bin" >> $GITHUB_PATH
         
     - name: Deploy to Koyeb
       env:
@@ -106,25 +108,38 @@ jobs:
         # Get the latest image tag
         IMAGE_TAG="ghcr.io/${{ github.repository }}:latest"
         
+        # Verify Koyeb CLI is available
+        which koyeb || echo "Koyeb CLI not found in PATH"
+        
         # Check if app exists, create if not
         if ! koyeb app get coffeecom-backend &>/dev/null; then
+          echo "Creating Koyeb app: coffeecom-backend"
           koyeb app create coffeecom-backend
+        else
+          echo "Koyeb app coffeecom-backend already exists"
         fi
         
+        # Verify secrets are available (without printing values)
+        echo "Checking if required secrets are set..."
+        [ -n "${{ secrets.SECRET_KEY }}" ] && echo "SECRET_KEY is set" || echo "WARNING: SECRET_KEY is not set"
+        [ -n "${{ secrets.JWT_SECRET_KEY }}" ] && echo "JWT_SECRET_KEY is set" || echo "WARNING: JWT_SECRET_KEY is not set"
+        [ -n "${{ secrets.SQLALCHEMY_DATABASE_URI }}" ] && echo "SQLALCHEMY_DATABASE_URI is set" || echo "WARNING: SQLALCHEMY_DATABASE_URI is not set"
+        
         # Deploy or update service
+        echo "Deploying to Koyeb..."
         koyeb service create api \
           --app coffeecom-backend \
           --docker $IMAGE_TAG \
           --ports 5000:http \
-          --env SECRET_KEY=${{ secrets.SECRET_KEY }} \
-          --env JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-          --env SQLALCHEMY_DATABASE_URI=${{ secrets.SQLALCHEMY_DATABASE_URI }} \
+          --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+          --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+          --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
           --env FLASK_ENV=production \
           --routes /:5000 \
           || koyeb service update api \
              --app coffeecom-backend \
              --docker $IMAGE_TAG \
-             --env SECRET_KEY=${{ secrets.SECRET_KEY }} \
-             --env JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-             --env SQLALCHEMY_DATABASE_URI=${{ secrets.SQLALCHEMY_DATABASE_URI }} \
+             --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+             --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+             --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
              --env FLASK_ENV=production

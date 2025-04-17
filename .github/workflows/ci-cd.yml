@@ -110,6 +110,12 @@ jobs:
       env:
         KOYEB_TOKEN: ${{ secrets.KOYEB_API_TOKEN }}
       run: |
+        # Create Koyeb config file
+        echo "Creating Koyeb configuration file..."
+        mkdir -p /home/runner/.koyeb
+        echo "apiKey: ${{ secrets.KOYEB_API_TOKEN }}" > /home/runner/.koyeb/config.yaml
+        echo "Config file created at: /home/runner/.koyeb/config.yaml"
+        cat /home/runner/.koyeb/config.yaml | grep -v apiKey
         # Get the latest image tag
         IMAGE_TAG="ghcr.io/${{ github.repository }}:latest"
         
@@ -126,9 +132,9 @@ jobs:
         
         # Check if app exists, create if not
         echo "Checking if Koyeb app exists..."
-        if ! koyeb app get coffeecom-backend &>/dev/null; then
+        if ! koyeb --token "${{ secrets.KOYEB_API_TOKEN }}" app get coffeecom-backend &>/dev/null; then
           echo "Creating Koyeb app: coffeecom-backend"
-          koyeb app create coffeecom-backend
+          koyeb --token "${{ secrets.KOYEB_API_TOKEN }}" app create coffeecom-backend
           if [ $? -ne 0 ]; then
             echo "ERROR: Failed to create Koyeb app"
             exit 1
@@ -162,9 +168,9 @@ jobs:
         
         # Deploy or update service
         echo "Deploying to Koyeb..."
-        if koyeb service get api --app coffeecom-backend &>/dev/null; then
+        if koyeb --token "${{ secrets.KOYEB_API_TOKEN }}" service get api --app coffeecom-backend &>/dev/null; then
           echo "Updating existing service..."
-          koyeb service update api \
+          koyeb --token "${{ secrets.KOYEB_API_TOKEN }}" service update api \
             --app coffeecom-backend \
             --docker $IMAGE_TAG \
             --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
@@ -177,7 +183,7 @@ jobs:
           fi
         else
           echo "Creating new service..."
-          koyeb service create api \
+          koyeb --token "${{ secrets.KOYEB_API_TOKEN }}" service create api \
             --app coffeecom-backend \
             --docker $IMAGE_TAG \
             --ports 5000:http \

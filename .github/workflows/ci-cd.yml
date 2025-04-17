@@ -104,7 +104,7 @@ jobs:
         sudo mv /tmp/koyeb/koyeb /usr/local/bin/
         chmod +x /usr/local/bin/koyeb
         # Verify installation
-        koyeb --version
+        koyeb --help
         
     - name: Deploy to Koyeb
       env:
@@ -114,37 +114,82 @@ jobs:
         IMAGE_TAG="ghcr.io/${{ github.repository }}:latest"
         
         # Verify Koyeb CLI is available
-        which koyeb || echo "Koyeb CLI not found in PATH"
+        if ! command -v koyeb &> /dev/null; then
+          echo "ERROR: Koyeb CLI not found in PATH"
+          echo "PATH: $PATH"
+          echo "Contents of /usr/local/bin:"
+          ls -la /usr/local/bin
+          exit 1
+        fi
+        
+        echo "Koyeb CLI found at $(which koyeb)"
         
         # Check if app exists, create if not
+        echo "Checking if Koyeb app exists..."
         if ! koyeb app get coffeecom-backend &>/dev/null; then
           echo "Creating Koyeb app: coffeecom-backend"
           koyeb app create coffeecom-backend
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to create Koyeb app"
+            exit 1
+          fi
         else
           echo "Koyeb app coffeecom-backend already exists"
         fi
         
         # Verify secrets are available (without printing values)
         echo "Checking if required secrets are set..."
-        [ -n "${{ secrets.SECRET_KEY }}" ] && echo "SECRET_KEY is set" || echo "WARNING: SECRET_KEY is not set"
-        [ -n "${{ secrets.JWT_SECRET_KEY }}" ] && echo "JWT_SECRET_KEY is set" || echo "WARNING: JWT_SECRET_KEY is not set"
-        [ -n "${{ secrets.SQLALCHEMY_DATABASE_URI }}" ] && echo "SQLALCHEMY_DATABASE_URI is set" || echo "WARNING: SQLALCHEMY_DATABASE_URI is not set"
+        if [ -z "${{ secrets.SECRET_KEY }}" ]; then
+          echo "ERROR: SECRET_KEY is not set in GitHub secrets"
+          exit 1
+        else
+          echo "SECRET_KEY is set"
+        fi
+        
+        if [ -z "${{ secrets.JWT_SECRET_KEY }}" ]; then
+          echo "ERROR: JWT_SECRET_KEY is not set in GitHub secrets"
+          exit 1
+        else
+          echo "JWT_SECRET_KEY is set"
+        fi
+        
+        if [ -z "${{ secrets.SQLALCHEMY_DATABASE_URI }}" ]; then
+          echo "ERROR: SQLALCHEMY_DATABASE_URI is not set in GitHub secrets"
+          exit 1
+        else
+          echo "SQLALCHEMY_DATABASE_URI is set"
+        fi
         
         # Deploy or update service
         echo "Deploying to Koyeb..."
-        koyeb service create api \
-          --app coffeecom-backend \
-          --docker $IMAGE_TAG \
-          --ports 5000:http \
-          --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-          --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
-          --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
-          --env FLASK_ENV=production \
-          --routes /:5000 \
-          || koyeb service update api \
-             --app coffeecom-backend \
-             --docker $IMAGE_TAG \
-             --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-             --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
-             --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
-             --env FLASK_ENV=production
+        if koyeb service get api --app coffeecom-backend &>/dev/null; then
+          echo "Updating existing service..."
+          koyeb service update api \
+            --app coffeecom-backend \
+            --docker $IMAGE_TAG \
+            --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+            --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
+            --env FLASK_ENV=production
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to update Koyeb service"
+            exit 1
+          fi
+        else
+          echo "Creating new service..."
+          koyeb service create api \
+            --app coffeecom-backend \
+            --docker $IMAGE_TAG \
+            --ports 5000:http \
+            --env SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            --env JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+            --env SQLALCHEMY_DATABASE_URI="${{ secrets.SQLALCHEMY_DATABASE_URI }}" \
+            --env FLASK_ENV=production \
+            --routes /:5000
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to create Koyeb service"
+            exit 1
+          fi
+        fi
+        
+        echo "Deployment to Koyeb completed successfully!"

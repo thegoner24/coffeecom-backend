@@ -26,9 +26,10 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest
 
-      - name: Deploy on Koyeb
-        run: |
-          curl -X POST "https://app.koyeb.com/services/eb175cfc-32b4-48f9-b1f6-1806fd62707d?deploymentId=0fed4349-c2ff-470d-9b1b-f3bfcc3db9bf" \
-            -H "Authorization: Bearer ${{ secrets.KOYEB_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"service": "database", "image": "${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest"}'
+      - name: Deploy to Koyeb
+        uses: koyeb/action-git-deploy@v1
+        with:
+          api-token: ${{ secrets.KOYEB_TOKEN }}
+          app-name: coffeecom-backend
+          service-name: database
+          docker-image: ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest

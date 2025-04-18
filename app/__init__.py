@@ -64,8 +64,13 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
     
-    # Set up CORS
-    CORS(app, resources={r"/api/*": {"origins": os.getenv('CORS_ORIGINS', '*').split(',')}})
+    # Set up CORS with additional configuration for Next.js frontend
+    CORS(app, resources={r"/api/*": {
+        "origins": os.getenv('CORS_ORIGINS', '*').split(','),
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": True
+    }})
     
     # Set up rate limiting
     limiter.init_app(app)

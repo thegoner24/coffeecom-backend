@@ -64,9 +64,10 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
     
-    # Set up CORS with additional configuration for Next.js frontend
+    # Set up CORS for ALL origins for all API endpoints (OPEN for frontend use)
+    # NOTE: For production, restrict 'origins' to your frontend domain(s) only!
     CORS(app, resources={r"/api/*": {
-        "origins": os.getenv('CORS_ORIGINS', '*').split(','),
+        "origins": "*",
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
         "supports_credentials": True

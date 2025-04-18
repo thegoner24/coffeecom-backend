@@ -127,6 +127,7 @@ def create_app(test_config=None):
     from .routes.user import user_bp
     from .routes.dashboard import dashboard_bp
     from .routes.product import product_bp
+    from .routes.category import category_bp
     from .routes.transaction import transaction_bp
     from .routes.admin import admin_bp
     from .routes.monitoring import monitoring_bp
@@ -138,6 +139,7 @@ def create_app(test_config=None):
     app.register_blueprint(user_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(product_bp)
+    app.register_blueprint(category_bp)
     app.register_blueprint(transaction_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(monitoring_bp)

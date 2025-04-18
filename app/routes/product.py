@@ -1,9 +1,17 @@
 from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+import os
 from .. import db
 from ..models.product import Product
 from ..models.category import Category
 from ..models.user import User
 from flask_jwt_extended import jwt_required, get_jwt_identity
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'uploads', 'products')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 product_bp = Blueprint('product', __name__, url_prefix='/api/products')
 
@@ -73,20 +81,43 @@ def update_product(product_id):
     user = User.query.get(user_id)
     if not user or user.role != 'seller':
         return jsonify({'msg': 'Seller access required'}), 403
-        
+
     product = Product.query.get(product_id)
     if not product:
         return jsonify({'msg': 'Product not found'}), 404
-    data = request.get_json()
-    product.name = data.get('name', product.name)
-    product.description = data.get('description', product.description)
-    product.price = data.get('price', product.price)
-    product.category_id = data.get('category_id', product.category_id)
-    product.image_url = data.get('image_url', product.image_url)
-    product.is_available = data.get('is_available', product.is_available)
-    product.discount_percentage = data.get('discount_percentage', product.discount_percentage)
-    product.weight = data.get('weight', product.weight)
-    product.dimensions = data.get('dimensions', product.dimensions)
+
+    if request.content_type and request.content_type.startswith('multipart/form-data'):
+        # Multipart form for image upload
+        data = request.form
+        file = request.files.get('image')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            # Save relative path for image_url
+            product.image_url = f'/uploads/products/{filename}'
+        # Update other fields from form
+        product.name = data.get('name', product.name)
+        product.description = data.get('description', product.description)
+        product.price = float(data.get('price', product.price)) if data.get('price') else product.price
+        product.category_id = int(data.get('category_id', product.category_id)) if data.get('category_id') else product.category_id
+        product.is_available = data.get('is_available', str(product.is_available)).lower() == 'true'
+        product.discount_percentage = float(data.get('discount_percentage', product.discount_percentage)) if data.get('discount_percentage') else product.discount_percentage
+        product.weight = float(data.get('weight', product.weight)) if data.get('weight') else product.weight
+        product.dimensions = data.get('dimensions', product.dimensions)
+    else:
+        # Fallback for JSON
+        data = request.get_json()
+        product.name = data.get('name', product.name)
+        product.description = data.get('description', product.description)
+        product.price = data.get('price', product.price)
+        product.category_id = data.get('category_id', product.category_id)
+        product.image_url = data.get('image_url', product.image_url)
+        product.is_available = data.get('is_available', product.is_available)
+        product.discount_percentage = data.get('discount_percentage', product.discount_percentage)
+        product.weight = data.get('weight', product.weight)
+        product.dimensions = data.get('dimensions', product.dimensions)
     db.session.commit()
     return jsonify({'msg': 'Product updated'})
 

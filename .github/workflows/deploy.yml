@@ -26,22 +26,17 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest
 
-      - name: Install Koyeb CLI
-        run: |
-          curl -fsSL https://cli.koyeb.com/install.sh | bash
-          koyeb config save --token ${{ secrets.KOYEB_TOKEN }}
-          echo "Koyeb CLI installed and configured"
-
       - name: Deploy to Koyeb
-        run: |
-          echo "Deploying to Koyeb..."
-          koyeb service redeploy database -a coffeecom-backend \
-            --docker-image ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest \
-            --ports 8000:http \
-            --env PORT=8000 \
-            --env FLASK_ENV=production \
-            --env SQLALCHEMY_DATABASE_URI=${{ secrets.DATABASE_URL }} \
-            --env SECRET_KEY=${{ secrets.SECRET_KEY }} \
-            --env JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          echo "Deployment triggered"
-          koyeb service get database -a coffeecom-backend
+        uses: koyeb/action-deploy@v1
+        with:
+          api-token: ${{ secrets.KOYEB_TOKEN }}
+          app-name: coffeecom-backend
+          service-name: database
+          service-ports: 8000:http
+          docker-image: ${{ secrets.DOCKERHUB_USERNAME }}/coffeecom-backend:latest
+          service-env: |
+            PORT=8000
+            FLASK_ENV=production
+            SQLALCHEMY_DATABASE_URI=${{ secrets.DATABASE_URL }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}

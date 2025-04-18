@@ -1,0 +1,447 @@
+{
+  "name": "CoffeeCom API Tests",
+  "description": "Comprehensive test suite for CoffeeCom Backend API",
+  "baseUrl": "{{baseUrl}}",
+  "auth": {
+    "type": "bearer",
+    "bearer": "{{accessToken}}"
+  },
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "https://nosy-saba-enclosure-cd2f8430.koyeb.app",
+      "description": "Base URL for the API (Koyeb deployment)"
+    },
+    {
+      "name": "accessToken",
+      "value": "",
+      "description": "JWT access token"
+    },
+    {
+      "name": "userId",
+      "value": "",
+      "description": "Current user ID"
+    },
+    {
+      "name": "productId",
+      "value": "",
+      "description": "Product ID for testing"
+    }
+  ],
+  "folders": [
+    {
+      "name": "Authentication",
+      "description": "User registration, login, and account management",
+      "items": [
+        {
+          "name": "Register User",
+          "description": "Register a new user account",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/auth/register",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "email": "test@example.com",
+              "password": "Password123!",
+              "username": "testuser",
+              "first_name": "Test",
+              "last_name": "User",
+              "role": "user"
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 201",
+              "script": "pm.test(\"Status code is 201\", function() { pm.response.to.have.status(201); });"
+            },
+            {
+              "name": "Response has correct message",
+              "script": "pm.test(\"Response has correct message\", function() { pm.expect(pm.response.json().msg).to.equal(\"User registered successfully\"); });"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "description": "Login with user credentials",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/auth/login",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "email": "test@example.com",
+              "password": "Password123!"
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response has access token",
+              "script": "pm.test(\"Response has access token\", function() { pm.expect(pm.response.json().access_token).to.exist; });"
+            },
+            {
+              "name": "Save access token",
+              "script": "var jsonData = pm.response.json(); pm.variables.set(\"accessToken\", jsonData.access_token); pm.variables.set(\"userId\", jsonData.user.id);"
+            }
+          ]
+        },
+        {
+          "name": "Get User Profile",
+          "description": "Retrieve the current user's profile",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/auth/profile",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response has user data",
+              "script": "pm.test(\"Response has user data\", function() { pm.expect(pm.response.json().email).to.exist; });"
+            }
+          ]
+        },
+        {
+          "name": "Update User Profile",
+          "description": "Update the current user's profile information",
+          "method": "PUT",
+          "url": "{{baseUrl}}/api/auth/profile",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "first_name": "Updated",
+              "last_name": "User",
+              "address": "123 Coffee St",
+              "phone_number": "555-123-4567"
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Profile updated successfully",
+              "script": "pm.test(\"Profile updated successfully\", function() { pm.expect(pm.response.json().msg).to.equal(\"Profile updated\"); });"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "description": "Product listing, details, and management",
+      "items": [
+        {
+          "name": "Get All Products",
+          "description": "Retrieve all available products",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/products/",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response is an array",
+              "script": "pm.test(\"Response is an array\", function() { pm.expect(pm.response.json()).to.be.an('array'); });"
+            },
+            {
+              "name": "Save first product ID if available",
+              "script": "var jsonData = pm.response.json(); if (jsonData.length > 0) { pm.variables.set(\"productId\", jsonData[0].id); }"
+            }
+          ]
+        },
+        {
+          "name": "Get Product by ID",
+          "description": "Retrieve details for a specific product",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/products/{{productId}}",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response has product data",
+              "script": "pm.test(\"Response has product data\", function() { pm.expect(pm.response.json().name).to.exist; });"
+            }
+          ]
+        },
+        {
+          "name": "Create Product (Seller)",
+          "description": "Create a new product (requires seller role)",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/products/",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "name": "Arabica Coffee Beans",
+              "description": "Premium Arabica coffee beans from Ethiopia",
+              "price": 15.99,
+              "category_id": 1,
+              "image_url": "https://example.com/images/arabica.jpg",
+              "is_available": true,
+              "discount_percentage": 0,
+              "weight": "250g",
+              "dimensions": "10x5x15cm"
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 201 or 403",
+              "script": "pm.test(\"Status code is 201 or 403\", function() { pm.expect(pm.response.code).to.be.oneOf([201, 403]); });"
+            },
+            {
+              "name": "Save product ID if created",
+              "script": "var jsonData = pm.response.json(); if (jsonData.id) { pm.variables.set(\"productId\", jsonData.id); }"
+            }
+          ]
+        },
+        {
+          "name": "Update Product",
+          "description": "Update an existing product",
+          "method": "PUT",
+          "url": "{{baseUrl}}/api/products/{{productId}}",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "price": 17.99,
+              "discount_percentage": 5
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 200 or 403",
+              "script": "pm.test(\"Status code is 200 or 403\", function() { pm.expect(pm.response.code).to.be.oneOf([200, 403]); });"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "Cart, orders, and payment processing",
+      "items": [
+        {
+          "name": "Add to Cart",
+          "description": "Add a product to the shopping cart",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/cart/add",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "product_id": "{{productId}}",
+              "quantity": 2
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 200 or 201",
+              "script": "pm.test(\"Status code is 200 or 201\", function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
+            }
+          ]
+        },
+        {
+          "name": "View Cart",
+          "description": "View the current user's shopping cart",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/cart",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            }
+          ]
+        },
+        {
+          "name": "Create Order",
+          "description": "Create a new order from cart items",
+          "method": "POST",
+          "url": "{{baseUrl}}/api/orders",
+          "headers": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "type": "json",
+            "content": {
+              "shipping_address": "123 Coffee St, City, Country",
+              "payment_method": "credit_card"
+            }
+          },
+          "tests": [
+            {
+              "name": "Status code is 201",
+              "script": "pm.test(\"Status code is 201\", function() { pm.response.to.have.status(201); });"
+            }
+          ]
+        },
+        {
+          "name": "Get Order History",
+          "description": "Retrieve the user's order history",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/orders",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response is an array",
+              "script": "pm.test(\"Response is an array\", function() { pm.expect(pm.response.json()).to.be.an('array'); });"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative functions",
+      "items": [
+        {
+          "name": "Get All Users (Admin)",
+          "description": "Retrieve all users (requires admin role)",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/admin/users",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200 or 403",
+              "script": "pm.test(\"Status code is 200 or 403\", function() { pm.expect(pm.response.code).to.be.oneOf([200, 403]); });"
+            }
+          ]
+        },
+        {
+          "name": "Get System Stats (Admin)",
+          "description": "Retrieve system statistics (requires admin role)",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/admin/stats",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200 or 403",
+              "script": "pm.test(\"Status code is 200 or 403\", function() { pm.expect(pm.response.code).to.be.oneOf([200, 403]); });"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "description": "System health and monitoring",
+      "items": [
+        {
+          "name": "Health Check",
+          "description": "Check system health status",
+          "method": "GET",
+          "url": "{{baseUrl}}/api/monitoring/health",
+          "headers": [],
+          "tests": [
+            {
+              "name": "Status code is 200",
+              "script": "pm.test(\"Status code is 200\", function() { pm.response.to.have.status(200); });"
+            },
+            {
+              "name": "Response has status field",
+              "script": "pm.test(\"Response has status field\", function() { pm.expect(pm.response.json().status).to.exist; });"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "name": "Complete User Journey",
+      "description": "Test the complete user flow from registration to order completion",
+      "steps": [
+        {
+          "type": "request",
+          "requestName": "Register User"
+        },
+        {
+          "type": "request",
+          "requestName": "Login User"
+        },
+        {
+          "type": "request",
+          "requestName": "Get User Profile"
+        },
+        {
+          "type": "request",
+          "requestName": "Update User Profile"
+        },
+        {
+          "type": "request",
+          "requestName": "Get All Products"
+        },
+        {
+          "type": "request",
+          "requestName": "Get Product by ID"
+        },
+        {
+          "type": "request",
+          "requestName": "Add to Cart"
+        },
+        {
+          "type": "request",
+          "requestName": "View Cart"
+        },
+        {
+          "type": "request",
+          "requestName": "Create Order"
+        },
+        {
+          "type": "request",
+          "requestName": "Get Order History"
+        }
+      ]
+    }
+  ]
+}

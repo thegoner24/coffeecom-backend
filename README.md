@@ -2,6 +2,15 @@
 
 A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integration, JWT authentication, and role-based access control (user and seller roles).
 
+## Live Deployment
+
+**🌐 Live API URL**: [https://nosy-saba-enclosure-cd2f8430.koyeb.app](https://nosy-saba-enclosure-cd2f8430.koyeb.app)
+
+## API Documentation & Testing
+
+- **API Documentation**: [Swagger/OpenAPI Documentation](https://nosy-saba-enclosure-cd2f8430.koyeb.app/api/docs)
+- **API Testing**: [APIdog Collection](https://5x7k4qnq6a.apidog.io)
+
 ## Features
 
 - User and seller authentication with JWT
@@ -12,6 +21,21 @@ A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integ
 - CI/CD pipeline with GitHub Actions
 - Deployment to Koyeb
 
+## Role-Based Permissions
+
+The application implements a comprehensive role-based access control system:
+
+### Seller Role
+- Can create, update, and delete products
+- Can view orders for their products
+- Cannot place orders or add products to cart
+
+### User Role
+- Can browse products
+- Can add products to cart
+- Can place and manage orders
+- Cannot create, update, or delete products
+
 ## API Endpoints
 
 ### Authentication
@@ -19,6 +43,7 @@ A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integ
 - `POST /api/auth/register` - Register a new user or seller
 - `POST /api/auth/login` - Login and get JWT token
 - `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update user profile
 
 ### Products
 
@@ -27,6 +52,27 @@ A Flask-based ecommerce backend for a coffee shop with PostgreSQL database integ
 - `POST /api/products` - Add a new product (seller only)
 - `PUT /api/products/:id` - Update a product (seller only)
 - `DELETE /api/products/:id` - Delete a product (seller only)
+
+### Cart
+
+- `GET /api/cart` - View user's cart
+- `POST /api/cart/add` - Add product to cart (user only)
+- `PUT /api/cart/update/:item_id` - Update cart item quantity
+- `DELETE /api/cart/remove/:item_id` - Remove item from cart
+- `DELETE /api/cart/clear` - Clear entire cart
+
+### Orders
+
+- `GET /api/orders` - Get all user orders
+- `GET /api/orders/:id` - Get specific order details
+- `POST /api/orders` - Create a new order (user only)
+- `PUT /api/orders/:id/cancel` - Cancel an order
+
+### Transactions
+
+- `GET /api/transactions` - Get user transactions
+- `GET /api/transactions/:id` - Get transaction details
+- `POST /api/transactions` - Create a new transaction
 
 ### Dashboard
 

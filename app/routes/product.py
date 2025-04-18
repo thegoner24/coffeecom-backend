@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from .. import db
 from ..models.product import Product
 from ..models.category import Category
+from ..models.user import User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 product_bp = Blueprint('product', __name__, url_prefix='/api/products')
@@ -68,6 +69,11 @@ def create_product():
 @product_bp.route('/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def update_product(product_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user or user.role != 'seller':
+        return jsonify({'msg': 'Seller access required'}), 403
+        
     product = Product.query.get(product_id)
     if not product:
         return jsonify({'msg': 'Product not found'}), 404
@@ -87,6 +93,11 @@ def update_product(product_id):
 @product_bp.route('/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_product(product_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user or user.role != 'seller':
+        return jsonify({'msg': 'Seller access required'}), 403
+        
     product = Product.query.get(product_id)
     if not product:
         return jsonify({'msg': 'Product not found'}), 404

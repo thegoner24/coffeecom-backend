@@ -1,0 +1,7 @@
+2025-04-18 13:08:12,673 INFO: CoffeeCom startup [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:72]
+2025-04-18 13:08:13,206 INFO: Request to / took 0.00s [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:89]
+2025-04-18 13:08:13,211 INFO: Request to /api/monitoring/health took 0.00s [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:89]
+2025-04-18 13:08:40,031 INFO: CoffeeCom startup [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:72]
+2025-04-18 13:08:41,589 INFO: CoffeeCom startup [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:72]
+2025-04-18 13:08:43,287 INFO: Request to / took 0.00s [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:89]
+2025-04-18 13:08:43,337 INFO: Request to /favicon.ico took 0.00s [in C:\Users\LENOVO\Desktop\coffeecom-backend\app\__init__.py:89]

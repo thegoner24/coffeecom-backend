@@ -12,6 +12,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 import time
 
+# Import our database adapter for psycopg2cffi compatibility
+from app.database import *
+
 load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
@@ -47,7 +50,16 @@ def create_app(test_config=None):
         # For testing
         app.config.update(test_config)
     
-    # Set up extensions
+    # Set up extensions with custom engine configuration for psycopg2cffi compatibility
+    if app.config.get('SQLALCHEMY_DATABASE_URI'):
+        # Use a custom engine configuration for PostgreSQL
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
+            app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+                'connect_args': {'connect_timeout': 10},
+                'pool_pre_ping': True,
+                'pool_recycle': 300,
+            }
+    
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
